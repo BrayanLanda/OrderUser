@@ -1,3 +1,5 @@
+using Auth.Domain.Entities;
+
 namespace Auth.Domain.Repositories;
 
 public interface IRefreshTokenRepository
