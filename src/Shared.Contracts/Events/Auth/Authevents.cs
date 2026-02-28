@@ -1,6 +1,6 @@
 namespace Shared.Contracts.Events.Auth;
 
-public record OrderValidationRequest
+public record OrderValidationRequested
 {
     public Guid CorrelationId { get; set; }
     public Guid OrderId { get; set; }
