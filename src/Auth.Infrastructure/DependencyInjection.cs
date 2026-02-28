@@ -25,25 +25,23 @@ public static class DependencyInjection
             var settings = configuration.GetSection("MongoDB").Get<MongoDbSettings>()!;
             return new MongoDbContext(settings);
         });
-        
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
-        
+
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.AddScoped<IJwtService, JwtService>();
-        
+
         services.AddScoped<RegisterUseCase>();
         services.AddScoped<LoginUseCase>();
         services.AddScoped<RefreshTokenUseCase>();
-        
+
         services.AddMassTransit(x =>
         {
-            x.UsingInMemory(); // Bus interno para publish
-
+            x.UsingInMemory();
             x.AddRider(rider =>
             {
-                // Consumers
                 rider.AddConsumer<OrderValidationRequestedConsumer>();
                 rider.AddConsumer<OrderConfirmedConsumer>();
                 rider.AddConsumer<OrderCancelledConsumer>();
@@ -52,21 +50,18 @@ public static class DependencyInjection
                 {
                     k.Host(configuration["Kafka:BootstrapServers"]);
 
-                    // Tópico: order.validation.requested
                     k.TopicEndpoint<OrderValidationRequested>(
                         "order.validation.requested",
                         "auth-service-group",
                         e => e.ConfigureConsumer<OrderValidationRequestedConsumer>(ctx)
                     );
 
-                    // Tópico: order.confirmed
                     k.TopicEndpoint<OrderConfirmed>(
                         "order.confirmed",
                         "auth-service-group",
                         e => e.ConfigureConsumer<OrderConfirmedConsumer>(ctx)
                     );
 
-                    // Tópico: order.cancelled
                     k.TopicEndpoint<OrderCancelled>(
                         "order.cancelled",
                         "auth-service-group",
@@ -75,7 +70,6 @@ public static class DependencyInjection
                 });
             });
         });
-
         return services;
     }
 }
