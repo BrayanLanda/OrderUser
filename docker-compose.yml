@@ -1,0 +1,189 @@
+version: "3.9"
+
+# =============================================================
+#  KAFKA SAGA - Infraestructura completa
+#  Auth (MongoDB) | Orders (Postgres) | Products (Postgres)
+# =============================================================
+
+networks:
+  kafka-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  orders_pg_data:
+  products_pg_data:
+  kafka_data:
+
+services:
+
+  # -----------------------------------------------------------
+  # KAFKA (KRaft mode - sin Zookeeper)
+  # -----------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka
+    hostname: kafka
+    networks:
+      - kafka-net
+    ports:
+      - "9092:9092"       # Para acceso desde el host (tus .NET apps en dev)
+      - "9101:9101"       # JMX (opcional, para monitoreo)
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # -----------------------------------------------------------
+  # KAFKA UI - Para visualizar tópicos, mensajes y consumer groups
+  # http://localhost:8080
+  # -----------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    networks:
+      - kafka-net
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # -----------------------------------------------------------
+  # KAFKA INIT - Crea los tópicos al arrancar
+  # -----------------------------------------------------------
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-init
+    networks:
+      - kafka-net
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      echo 'Esperando que Kafka esté listo...'
+      sleep 5
+
+      echo 'Creando tópicos de la Saga...'
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic order.validation.requested --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic user.validated --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic user.rejected --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic order.created --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic stock.reserved --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic stock.insufficient --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic order.confirmed --partitions 3 --replication-factor 1
+
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists \
+        --topic order.cancelled --partitions 3 --replication-factor 1
+
+      echo '✅ Tópicos creados exitosamente:'
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
+
+  # -----------------------------------------------------------
+  # MONGODB - Base de datos de Auth
+  # -----------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    hostname: mongodb
+    networks:
+      - kafka-net
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: authdb
+    volumes:
+      - mongo_data:/data/db
+      - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------
+  # POSTGRESQL - Base de datos de Orders
+  # -----------------------------------------------------------
+  postgres-orders:
+    image: postgres:16-alpine
+    container_name: postgres-orders
+    hostname: postgres-orders
+    networks:
+      - kafka-net
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: orders_user
+      POSTGRES_PASSWORD: orders_pass
+      POSTGRES_DB: ordersdb
+    volumes:
+      - orders_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders_user -d ordersdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------
+  # POSTGRESQL - Base de datos de Products
+  # -----------------------------------------------------------
+  postgres-products:
+    image: postgres:16-alpine
+    container_name: postgres-products
+    hostname: postgres-products
+    networks:
+      - kafka-net
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: products_user
+      POSTGRES_PASSWORD: products_pass
+      POSTGRES_DB: productsdb
+    volumes:
+      - products_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U products_user -d productsdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
