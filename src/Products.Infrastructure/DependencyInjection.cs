@@ -1,3 +1,14 @@
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Products.Application.UseCases;
+using Products.Domain.Repositories;
+using Products.Infrastructure.Messaging.Consumers;
+using Products.Infrastructure.Persistence;
+using Products.Infrastructure.Persistence.Repositories;
+using Shared.Contracts.Events.Orders;
+
 namespace Products.Infrastructure;
 
 public static class DependencyInjection
