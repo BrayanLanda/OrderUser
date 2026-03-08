@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Products.Application.DTOs;
 using Products.Application.UseCases;
-
 namespace Products.API.Controllers;
 
 [ApiController]
