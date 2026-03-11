@@ -28,7 +28,6 @@ namespace Products.Infrastructure.Persistence
                 e.HasIndex(r => new { r.OrderId, r.ProductId });
             });
 
-            // Seed con valores 100% estáticos
             var createdAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             modelBuilder.Entity<Product>().HasData(
