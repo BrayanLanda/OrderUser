@@ -11,14 +11,14 @@ namespace Products.Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Product>(e =>
-            {
-                e.HasKey(p => p.Id);
-                e.Property(p => p.Name).IsRequired().HasMaxLength(200);
-                e.Property(p => p.Description).HasMaxLength(1000);
-                e.Property(p => p.Price).HasPrecision(18, 2);
-                e.Property(p => p.Stock).IsRequired();
-                e.HasIndex(p => p.Name);
-            });
+                {
+                    e.HasKey(p => p.Id);
+                    e.Property(p => p.Name).IsRequired().HasMaxLength(200);
+                    e.Property(p => p.Description).HasMaxLength(1000);
+                    e.Property(p => p.Price).HasPrecision(18, 2);
+                    e.Property(p => p.Stock).IsRequired();
+                    e.HasIndex(p => p.Name);
+                });
 
             modelBuilder.Entity<StockReservation>(e =>
             {
@@ -28,11 +28,14 @@ namespace Products.Infrastructure.Persistence
                 e.HasIndex(r => new { r.OrderId, r.ProductId });
             });
 
+            // Seed con valores 100% estáticos
+            var createdAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
             modelBuilder.Entity<Product>().HasData(
-                CreateProduct(Guid.Parse("a1b2c3d4-0001-0000-0000-000000000001"), "Laptop Pro 15", "Laptop de alto rendimiento", 1500.00m, 10),
-                CreateProduct(Guid.Parse("a1b2c3d4-0002-0000-0000-000000000002"), "Mouse Inalámbrico", "Mouse ergonómico inalámbrico", 35.00m, 50),
-                CreateProduct(Guid.Parse("a1b2c3d4-0003-0000-0000-000000000003"), "Teclado Mecánico", "Teclado mecánico RGB", 120.00m, 25),
-                CreateProduct(Guid.Parse("a1b2c3d4-0004-0000-0000-000000000004"), "Monitor 4K", "Monitor 27 pulgadas 4K", 450.00m, 5)
+                new { Id = Guid.Parse("a1b2c3d4-0001-0000-0000-000000000001"), Name = "Laptop Pro 15", Description = "Laptop de alto rendimiento", Price = 1500.00m, Stock = 10, IsActive = true, CreatedAt = createdAt, UpdatedAt = createdAt },
+                new { Id = Guid.Parse("a1b2c3d4-0002-0000-0000-000000000002"), Name = "Mouse Inalámbrico", Description = "Mouse ergonómico inalámbrico", Price = 35.00m, Stock = 50, IsActive = true, CreatedAt = createdAt, UpdatedAt = createdAt },
+                new { Id = Guid.Parse("a1b2c3d4-0003-0000-0000-000000000003"), Name = "Teclado Mecánico", Description = "Teclado mecánico RGB", Price = 120.00m, Stock = 25, IsActive = true, CreatedAt = createdAt, UpdatedAt = createdAt },
+                new { Id = Guid.Parse("a1b2c3d4-0004-0000-0000-000000000004"), Name = "Monitor 4K", Description = "Monitor 27 pulgadas 4K", Price = 450.00m, Stock = 5, IsActive = true, CreatedAt = createdAt, UpdatedAt = createdAt }
             );
         }
 

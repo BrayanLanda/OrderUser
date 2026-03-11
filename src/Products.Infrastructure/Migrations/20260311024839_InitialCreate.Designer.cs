@@ -12,7 +12,7 @@ using Products.Infrastructure.Persistence;
 namespace Products.Infrastructure.Migrations
 {
     [DbContext(typeof(ProductsDbContext))]
-    [Migration("20260305051540_InitialCreate")]
+    [Migration("20260311024839_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -67,46 +67,46 @@ namespace Products.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("a1b2c3d4-0001-0000-0000-000000000001"),
-                            CreatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(37),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Laptop de alto rendimiento",
                             IsActive = true,
                             Name = "Laptop Pro 15",
                             Price = 1500.00m,
                             Stock = 10,
-                            UpdatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(38)
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = new Guid("a1b2c3d4-0002-0000-0000-000000000002"),
-                            CreatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(2828),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Mouse ergonómico inalámbrico",
                             IsActive = true,
                             Name = "Mouse Inalámbrico",
                             Price = 35.00m,
                             Stock = 50,
-                            UpdatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(2828)
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = new Guid("a1b2c3d4-0003-0000-0000-000000000003"),
-                            CreatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(4926),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Teclado mecánico RGB",
                             IsActive = true,
                             Name = "Teclado Mecánico",
                             Price = 120.00m,
                             Stock = 25,
-                            UpdatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(4926)
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         },
                         new
                         {
                             Id = new Guid("a1b2c3d4-0004-0000-0000-000000000004"),
-                            CreatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(6297),
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Monitor 27 pulgadas 4K",
                             IsActive = true,
                             Name = "Monitor 4K",
                             Price = 450.00m,
                             Stock = 5,
-                            UpdatedAt = new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(6298)
+                            UpdatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
                 });
 

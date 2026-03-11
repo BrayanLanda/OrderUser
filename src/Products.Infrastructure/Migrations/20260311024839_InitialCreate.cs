@@ -53,10 +53,10 @@ namespace Products.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "IsActive", "Name", "Price", "Stock", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { new Guid("a1b2c3d4-0001-0000-0000-000000000001"), new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(37), "Laptop de alto rendimiento", true, "Laptop Pro 15", 1500.00m, 10, new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(38) },
-                    { new Guid("a1b2c3d4-0002-0000-0000-000000000002"), new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(2828), "Mouse ergonómico inalámbrico", true, "Mouse Inalámbrico", 35.00m, 50, new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(2828) },
-                    { new Guid("a1b2c3d4-0003-0000-0000-000000000003"), new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(4926), "Teclado mecánico RGB", true, "Teclado Mecánico", 120.00m, 25, new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(4926) },
-                    { new Guid("a1b2c3d4-0004-0000-0000-000000000004"), new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(6297), "Monitor 27 pulgadas 4K", true, "Monitor 4K", 450.00m, 5, new DateTime(2026, 3, 5, 5, 15, 40, 6, DateTimeKind.Utc).AddTicks(6298) }
+                    { new Guid("a1b2c3d4-0001-0000-0000-000000000001"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Laptop de alto rendimiento", true, "Laptop Pro 15", 1500.00m, 10, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("a1b2c3d4-0002-0000-0000-000000000002"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Mouse ergonómico inalámbrico", true, "Mouse Inalámbrico", 35.00m, 50, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("a1b2c3d4-0003-0000-0000-000000000003"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Teclado mecánico RGB", true, "Teclado Mecánico", 120.00m, 25, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
+                    { new Guid("a1b2c3d4-0004-0000-0000-000000000004"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Monitor 27 pulgadas 4K", true, "Monitor 4K", 450.00m, 5, new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
                 });
 
             migrationBuilder.CreateIndex(
