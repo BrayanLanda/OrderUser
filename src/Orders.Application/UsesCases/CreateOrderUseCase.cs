@@ -1,6 +1,8 @@
+using MassTransit;
 using Orders.Application.DTOs;
 using Orders.Domain.Entities;
 using Orders.Domain.Repositories;
+using Shared.Contracts.Events.Auth;
 
 namespace Orders.Application.UsesCases;
 
