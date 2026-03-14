@@ -2,8 +2,11 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Orders.Application.Services;
 using Orders.Application.UsesCases;
 using Orders.Domain.Repositories;
+using Orders.Infrastructure.Messaging;
+using Orders.Infrastructure.Messaging.Customers;
 using Orders.Infrastructure.Persistence;
 using Orders.Infrastructure.Persistence.Repositories;
 using Orders.Infrastructure.Saga;
@@ -25,11 +28,14 @@ public static class DependencyInjection
 
         // ── Repositorios ──────────────────────────────────────
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderEventPublisher, OrderEventPublisher>();
+        //services.AddSingleton<IOrderEventPublisher, OrderEventPublisher>();
 
         // ── Casos de uso ──────────────────────────────────────
         services.AddScoped<CreateOrderUseCase>();
         services.AddScoped<GetOrderByIdUseCase>();
         services.AddScoped<GetOrdersByUserUseCase>();
+        services.AddScoped<IEventPublisher, EventPublisher>();
 
         // ── MassTransit + Kafka + Saga ────────────────────────
         services.AddMassTransit(x =>
@@ -37,14 +43,14 @@ public static class DependencyInjection
             x.UsingInMemory();
 
             // Registrar la Saga con persistencia en EF Core
-            x.AddSagaStateMachine<OrderSagaStateMachine, OrderSagaState>()
-                .EntityFrameworkRepository(r =>
-                {
-                    r.ConcurrencyMode = ConcurrencyMode.Pessimistic;
-                    r.AddDbContext<DbContext, OrdersDbContext>((sp, opts) =>
-                        opts.UseNpgsql(configuration.GetConnectionString("OrdersDb")));
-                    r.UsePostgres();
-                });
+            // x.AddSagaStateMachine<OrderSagaStateMachine, OrderSagaState>()
+            //     .EntityFrameworkRepository(r =>
+            //     {
+            //         r.ConcurrencyMode = ConcurrencyMode.Pessimistic;
+            //         r.AddDbContext<DbContext, OrdersDbContext>((sp, opts) =>
+            //             opts.UseNpgsql(configuration.GetConnectionString("OrdersDb")));
+            //         r.UsePostgres();
+            //     });
 
             x.AddRider(rider =>
             {
@@ -53,6 +59,8 @@ public static class DependencyInjection
                 rider.AddProducer<OrderCreated>("order.created");
                 rider.AddProducer<OrderConfirmed>("order.confirmed");
                 rider.AddProducer<OrderCancelled>("order.cancelled");
+                rider.AddConsumer<OrderConfirmedConsumer>();
+                rider.AddConsumer<OrderCancelledConsumer>();
 
                 // Saga consumers — tópicos que la Saga consume
                 rider.AddSagaStateMachine<OrderSagaStateMachine, OrderSagaState>()
@@ -98,6 +106,18 @@ public static class DependencyInjection
                         "order.validation.requested",
                         "orders-saga-init-group",
                         e => e.ConfigureSaga<OrderSagaState>(ctx)
+                    );
+
+                    k.TopicEndpoint<OrderConfirmed>(
+                        "order.confirmed",
+                        "orders-update-group",
+                        e => e.ConfigureConsumer<OrderConfirmedConsumer>(ctx)
+                    );
+
+                    k.TopicEndpoint<OrderCancelled>(
+                        "order.cancelled",
+                        "orders-update-group",
+                        e => e.ConfigureConsumer<OrderCancelledConsumer>(ctx)
                     );
                 });
             });

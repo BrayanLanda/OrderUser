@@ -1,5 +1,6 @@
-using MassTransit;
+using MassTransit.KafkaIntegration;
 using Orders.Application.DTOs;
+using Orders.Application.Services;
 using Orders.Domain.Entities;
 using Orders.Domain.Repositories;
 using Shared.Contracts.Events.Auth;
@@ -8,7 +9,7 @@ namespace Orders.Application.UsesCases;
 
 public class CreateOrderUseCase(
     IOrderRepository orderRepo,
-    IPublishEndpoint publishEndpoint)
+    IEventPublisher eventPublisher)
 {
     public async Task<OrderDto> ExecuteAsync(
         CreateOrderRequest request,
@@ -23,14 +24,20 @@ public class CreateOrderUseCase(
         var order = Order.Create(userId, userEmail, items);
         await orderRepo.CreateAsync(order, ct);
 
-        await publishEndpoint.Publish(new OrderValidationRequested
+        await eventPublisher.PublishOrderValidationRequestedAsync(new OrderValidationRequested
         {
             CorrelationId = order.Id,
             OrderId = order.Id,
             UserId = userId,
             UserEmail = userEmail,
+            Items = order.Items.Select(i => new OrderValidationItem
+            {
+                ProductId = i.ProductId,
+                ProductName = i.ProductName,
+                Quantity = i.Quantity,
+                UnitPrice = i.UnitPrice,
+            }).ToList(),
         }, ct);
-
         return MapToDto(order);
     }
 

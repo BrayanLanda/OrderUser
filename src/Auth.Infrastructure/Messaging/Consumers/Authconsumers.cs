@@ -10,7 +10,7 @@ namespace Auth.Infrastructure.Messaging.Consumers;
 
 public class OrderValidationRequestedConsumer(
     IUserRepository userRepo,
-    IPublishEndpoint publishEndpoint,
+    IAuthEventPublisher eventPublisher,
     ILogger<OrderValidationRequestedConsumer> logger)
     : IConsumer<OrderValidationRequested>
 {
@@ -26,7 +26,7 @@ public class OrderValidationRequestedConsumer(
             var reason = user is null ? "Usuario no encontrado." : "La cuenta está desactivada.";
             logger.LogWarning("Usuario {UserId} rechazado: {Reason}", msg.UserId, reason);
 
-            await publishEndpoint.Publish(new UserRejected
+            await eventPublisher.PublishUserRejectedAsync(new UserRejected
             {
                 CorrelationId = msg.CorrelationId,
                 OrderId = msg.OrderId,
@@ -39,7 +39,7 @@ public class OrderValidationRequestedConsumer(
 
         logger.LogInformation("Usuario {UserId} validado correctamente", msg.UserId);
 
-        await publishEndpoint.Publish(new UserValidated
+        await eventPublisher.PublishUserValidatedAsync(new UserValidated
         {
             CorrelationId = msg.CorrelationId,
             OrderId = msg.OrderId,

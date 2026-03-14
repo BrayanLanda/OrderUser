@@ -1,6 +1,7 @@
 using Auth.Application.Services;
 using Auth.Application.UseCases;
 using Auth.Domain.Repositories;
+using Auth.Infrastructure.Messaging;
 using Auth.Infrastructure.Messaging.Consumers;
 using Auth.Infrastructure.Persistence;
 using Auth.Infrastructure.Persistence.Repositories;
@@ -29,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
+        services.AddScoped<IAuthEventPublisher, AuthEventPublisher>();
 
         services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
         services.AddScoped<IJwtService, JwtService>();
@@ -45,6 +47,8 @@ public static class DependencyInjection
                 rider.AddConsumer<OrderValidationRequestedConsumer>();
                 rider.AddConsumer<OrderConfirmedConsumer>();
                 rider.AddConsumer<OrderCancelledConsumer>();
+                rider.AddProducer<UserValidated>("user.validated");
+                rider.AddProducer<UserRejected>("user.rejected");
 
                 rider.UsingKafka((ctx, k) =>
                 {

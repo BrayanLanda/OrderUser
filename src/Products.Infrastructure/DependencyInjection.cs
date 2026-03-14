@@ -4,10 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Products.Application.UseCases;
 using Products.Domain.Repositories;
+using Products.Infrastructure.Messaging;
 using Products.Infrastructure.Messaging.Consumers;
 using Products.Infrastructure.Persistence;
 using Products.Infrastructure.Persistence.Repositories;
 using Shared.Contracts.Events.Orders;
+using Shared.Contracts.Events.Products;
 
 namespace Products.Infrastructure;
 
@@ -17,11 +19,12 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<ProductsDbContext>(options => 
+        services.AddDbContext<ProductsDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("ProductsDb")));
 
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IStockReservationRepository, StockReservationRepository>();
+        services.AddScoped<IProductEventPublisher, ProductEventPublisher>();
 
         services.AddScoped<CreateProductUseCase>();
         services.AddScoped<GetProductsUseCase>();
@@ -35,6 +38,8 @@ public static class DependencyInjection
             {
                 rider.AddConsumer<OrderCreatedConsumer>();
                 rider.AddConsumer<OrderCancelledConsumer>();
+                rider.AddProducer<StockReserved>("stock.reserved");
+                rider.AddProducer<StockInsufficient>("stock.insufficient");
 
                 rider.UsingKafka((ctx, k) =>
                 {

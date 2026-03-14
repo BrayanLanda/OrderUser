@@ -10,7 +10,7 @@ namespace Products.Infrastructure.Messaging.Consumers
     public class OrderCreatedConsumer(
     IProductRepository productRepo,
     IStockReservationRepository reservationRepo,
-    IPublishEndpoint publishEndpoint,
+    IProductEventPublisher eventPublisher,
     ILogger<OrderCreatedConsumer> logger) : IConsumer<OrderCreated>
     {
         public async Task Consume(ConsumeContext<OrderCreated> context)
@@ -43,7 +43,7 @@ namespace Products.Infrastructure.Messaging.Consumers
             {
                 logger.LogWarning("Stock insuficiente para orden {OrderId}: {Items}", msg.OrderId, insufficientItems.Count);
 
-                await publishEndpoint.Publish(new StockInsufficient
+                await eventPublisher.PublishStockInsufficientAsync(new StockInsufficient
                 {
                     CorrelationId = msg.CorrelationId,
                     OrderId = msg.OrderId,
@@ -73,7 +73,7 @@ namespace Products.Infrastructure.Messaging.Consumers
 
             logger.LogInformation("Stock reservado correctamente para orden {OrderId}", msg.OrderId);
 
-            await publishEndpoint.Publish(new StockReserved
+            await eventPublisher.PublishStockReservedAsync(new StockReserved
             {
                 CorrelationId = msg.CorrelationId,
                 OrderId = msg.OrderId,

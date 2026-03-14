@@ -6,6 +6,8 @@ public record OrderValidationRequested
     public Guid OrderId { get; set; }
     public Guid UserId { get; set; }
     public string UserEmail { get; set; } = default!;
+    public List<OrderValidationItem> Items { get; init; } = [];
+    public decimal TotalAmount { get; init; }
     public DateTime Timestamp { get; set; } = DateTime.Now;
 }
 
@@ -21,8 +23,16 @@ public record UserValidated
 public record UserRejected
 {
     public Guid CorrelationId { get; init; }
-    public Guid OrderId       { get; init; }
-    public Guid UserId        { get; init; }
-    public string Reason      { get; init; } = default!;
+    public Guid OrderId { get; init; }
+    public Guid UserId { get; init; }
+    public string Reason { get; init; } = default!;
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+}
+
+public record OrderValidationItem
+{
+    public Guid ProductId { get; init; }
+    public string ProductName { get; init; } = default!;
+    public int Quantity { get; init; }
+    public decimal UnitPrice { get; init; }
 }
